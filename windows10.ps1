@@ -7,7 +7,7 @@ Break
 }
 # firewall
 Set-ItemProperty -Path “HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy” -Name Enabled -Value 0 -Force
-netsh advfirewall import "$env:USERPROFILE\Desktop\Windows10LGPO\firewall.wfw"
+netsh advfirewall import "$env:USERPROFILE\Desktop\Windows10Script\firewall.wfw"
 netsh advfirewall firewall set rule name="Remote Assistance (DCOM-In)" new enable=no 
 netsh advfirewall firewall set rule name="Remote Assistance (PNRP-In)" new enable=no 
 netsh advfirewall firewall set rule name="Remote Assistance (RA Server TCP-In)" new enable=no 
@@ -16,18 +16,20 @@ netsh advfirewall firewall set rule name="Remote Assistance (SSDP UDP-In)" new e
 netsh advfirewall firewall set rule name="Remote Assistance (TCP-In)" new enable=no 
 netsh advfirewall firewall set rule name="Telnet Server" new enable=no 
 netsh advfirewall firewall set rule name="netcat" new enable=no
-
-cd $env:USERPROFILE
+ 
 # New-Item -ItemType directory -Path '\Desktop\Windows10LGPO\{09093B37-C80C-42A5-814A-4719224A5639}'
-Copy-Item -Path "Desktop\Windows10LGPO\LGPO.exe" -Destination "C:\Windows\System32"
-lgpo /g "$env:USERPROFILE\Desktop\Windows10LGPO\Win10"
+Copy-Item -Path "$env:USERPROFILE\Desktop\Windows10Script\LGPO.exe" -Destination "C:\Windows\System32"
+lgpo /g "$env:USERPROFILE\Desktop\Windows10Script\Win10"
 
+#Set automatic updates
+ECHO "Setting updates to automatic..."
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" /v AUOptions /t REG_DWORD /d 4 /f
 
 # set auditing
 auditpol /set /category:* /success:enable
 auditpol /set /category:* /failure:enable
 
-# backup user rights
+# user password settings
 net accounts /minpwlen:10 /maxpwage:30 /minpwage:1 /uniquepw:24
 net accounts /lockoutthreshold:6 /lockoutwindow:30 /lockoutduration:30
 
@@ -35,10 +37,10 @@ net accounts /lockoutthreshold:6 /lockoutwindow:30 /lockoutduration:30
 icacls \Users /reset /t
 
 
-# Passwords
+# Set all user passwords
 Get-WmiObject win32_useraccount | Foreach-Object {
 $ua = ([adsi](“WinNT://”+$_.caption).replace(“\”,”/”))
-$ua.SetPassword("Cyb3rPatriot1!")
+$ua.SetPassword("BlasterR0x123!")
 }
 
 ECHO "Disabled Users:"
@@ -149,7 +151,7 @@ Set-Service -Name XblGameSave -Status Stopped -StartupType Disabled
 Set-Service -Name XboxNetApiSvc -Status Stopped -StartupType Disabled
 # Remove Known unwanted programs
 
-$app.Uninstall()
+#$app.Uninstall()
 # disable remote desktop
 $remotedesktop = Read-Host 'Do you want to disable remote desktop?'
 if($remotedesktop.ToUpper() -eq 'Y') {
@@ -169,8 +171,7 @@ foreach($vendor in $vendors){
     $app.Uninstall()
 }
 # Firefox
-cd $env:USERPROFILE
-Copy-Item -Path "Desktop\Windows10LGPO\mozilla.cfg" -Destination "$env:Programfiles\Mozilla Firefox\"
-Copy-Item -Path "Desktop\Windows10LGPO\local-settings.js" -Destination "$env:Programfiles\Mozilla Firefox\defaults\pref"
+Copy-Item -Path "$env:USERPROFILE\Desktop\Windows10Script\mozilla.cfg" -Destination "$env:Programfiles\Mozilla Firefox\"
+Copy-Item -Path "$env:USERPROFILE\Desktop\Windows10Script\local-settings.js" -Destination "$env:Programfiles\Mozilla Firefox\defaults\pref"
 
 PAUSE 
